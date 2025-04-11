@@ -1,0 +1,35 @@
+﻿cmake_minimum_required(VERSION 3.14)
+project(compress_tool LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 引入 bit7z（通过 vcpkg 安装）
+find_package(unofficial-bit7z CONFIG REQUIRED)
+
+# 设置头文件路径
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# 源文件
+set(COMPRESS_SRCS
+    src/ArchiveTool.cpp
+)
+
+# 创建静态库
+add_library(compress_tool STATIC ${COMPRESS_SRCS})
+
+# 公开头文件路径
+target_include_directories(compress_tool PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# 链接 bit7z
+target_link_libraries(compress_tool PRIVATE unofficial::bit7z::bit7z64)
+
+# 测试（可选）
+option(BUILD_COMPRESS_TOOL_TEST "Build test executable" ON)
+if(BUILD_COMPRESS_TOOL_TEST)
+    add_executable(compress_tool_test tests/main.cpp)
+    target_link_libraries(compress_tool_test PRIVATE compress_tool)
+    target_include_directories(compress_tool_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+endif()
